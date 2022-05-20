@@ -17,8 +17,8 @@ jobs:
     - name: Login to Dockerhub
       uses: Docker/login action@v1
       with: 
-        username: ${{secret.DOCKERHUB_USERNAME}}
-        password: ${{secret.DOCKERHUB_PASSWORD}}
+        username: ${{secrets.DOCKERHUB_USERNAME}}
+        password: ${{secrets.DOCKERHUB_PASSWORD}}
         
     - name: Build and Push to Docker
       uses: Docker/build-push-action@v2
@@ -35,8 +35,8 @@ jobs:
     - name: Connect to EC2 with SSH
       uses: appleboy/ssh-action@master
       with:
-        host: ${{secret.HOST}}
-        key: ${{secret.AWS_PRIVATEKEY}}
+        host: ${{secrets.HOST}}
+        key: ${{secrets.AWS_PRIVATEKEY}}
         username: ubuntu
         port: 22
         script: |
