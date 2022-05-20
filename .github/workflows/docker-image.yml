@@ -41,7 +41,7 @@ jobs:
         port: 22
         script: |
           sudo docker pull catherinevania/helloworld:latest 
-          sudo docker run --detach --port 80:80 catherinevania/helloworld:latest 
+          sudo docker run -d -p 80:80 catherinevania/helloworld:latest 
 
   
     
