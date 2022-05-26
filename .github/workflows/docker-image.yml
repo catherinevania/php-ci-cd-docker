@@ -2,47 +2,43 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Login to Dockerhub
-      uses: Docker/login-action@v1
-      with: 
-        username: ${{secrets.DOCKERHUB_USERNAME}}
-        password: ${{secrets.DOCKERHUB_PASSWORD}}
-        
-    - name: Build and Push to Docker
-      uses: Docker/build-push-action@v2
-      with:
-        tags: catherinevania/helloworld:latest
-        
+      - uses: actions/checkout@v3
+      - name: Login to Dockerhub
+        uses: Docker/login-action@v1
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+
+      - name: Build and Push to Docker
+        uses: Docker/build-push-action@v2
+        with:
+          tags: catherinevania/helloworld:latest
+
   deploy:
-  
     runs-on: ubuntu-latest
-  
-    needs: build
-    
-    steps:
-    - name: Connect to EC2 with SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{secrets.HOST}}
-        key: ${{secrets.AWS_PRIVATEKEY}}
-        username: ubuntu
-        port: 22
-        script: |
-          sudo docker pull catherinevania/helloworld:latest 
-          sudo docker run -d -p 80:80 catherinevania/helloworld:latest 
 
-  
-    
-        
+    needs: build
+
+    steps:
+      - name: Connect to EC2 with SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.HOST}}
+          key: ${{secrets.AWS_PRIVATEKEY}}
+          username: ubuntu
+          port: 22
+          script: |
+            sudo docker container stop helloworld
+            sudo docker rm helloworld
+            sudo docker pull catherinevania/helloworld:latest
+            sudo docker container create --name helloworld --publish 80:80 catherinevania/helloworld:latest
+            sudo docker container start helloworld
