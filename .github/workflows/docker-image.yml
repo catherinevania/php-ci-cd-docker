@@ -8,8 +8,11 @@ on:
 
 jobs:
   build:
+    ## dijalankan pada ubuntu versi terbaru
     runs-on: ubuntu-latest
 
+    ## untuk melakukan login, kita menggunakan script bawaan dari github action
+    ## defaultnya itu cuman ngebuild, ga ngepush
     steps:
       - uses: actions/checkout@v3
       - name: Login to Dockerhub
@@ -22,7 +25,7 @@ jobs:
         uses: Docker/build-push-action@v2
         with:
           push: true
-          tags: catherinevania/helloworld:latest
+          tags: catherinevania/helloworld:v${{ github.run_number }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -30,7 +33,10 @@ jobs:
     needs: build
 
     steps:
-      ##SSH itu buat menghubungkan device yang bersifat private
+      ##SSH itu lebih aman, ada enkripsinya, jadi kita dapat meningkatkan keamanan VM kita supaya ga diakses orang lain
+      ##SSH punya password juga yaitu privatekey
+      ##EC2 layanan AWS yang digunakan untuk menjalankan virtual machine di cloud yang bisa diakses menggunakan IP public
+      #HOST dan privatekey dapet dari AWS
       - name: Connect to EC2 with SSH
         uses: appleboy/ssh-action@master
         with:
@@ -49,6 +55,6 @@ jobs:
           script: |
             sudo docker container stop helloworld 
             sudo docker rm helloworld
-            sudo docker pull catherinevania/helloworld:latest
-            sudo docker container create --name helloworld --publish 80:80 catherinevania/helloworld:latest
+            sudo docker pull catherinevania/helloworld:v${{ github.run_number }}
+            sudo docker container create --name helloworld --publish 80:80 catherinevania/helloworld:v${{ github.run_number }}
             sudo docker container start helloworld
